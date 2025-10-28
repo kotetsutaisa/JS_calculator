@@ -73,6 +73,7 @@ const calculator = {
 
     // ディスパッチ
     handlers[kind]?.(token);
+    console.log('合計値', this.sum);
     // 描画
     displayView();
   },
@@ -142,6 +143,27 @@ const calculator = {
   handleOperator(op) {
     // 連打禁止
     if (this.peekLast() === op) return;
+
+    // イコール後に演算子が押された場合の処理
+    if (this.state === 'afterEquals') {
+      console.log('イコール後', this.term);
+      const value = this.sum;
+      this.numberSign = +1;
+      this.dotSeen = false;
+
+      if (op === TOK.MUL || op === TOK.DIV) {
+        this.sum = 0;
+        this.term = value;
+        this.mulOp = op;
+      } else {
+        this.sum = value;
+        this.term = null;             
+        this.addSign = (op === TOK.ADD) ? +1 : -1;
+      }
+      this.displayNumbers.push(op);
+      this.state = 'afterOperator';
+      return;
+    }
 
     // 式の最初に演算子が入力された時の処理
     if (this.isAtExpressionStart()) {
